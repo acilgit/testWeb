@@ -41,6 +41,23 @@ export default class Web extends Component {
             this.setState({source: require('../src/main.html')});
         //}
     }
+    _onBridgeMessage(message) {
+        ToastAndroid.show(message, ToastAndroid.SHORT);
+        let msg = JSON.parse(message);
+        //dispatch(webActions.setText(msg.name));
+        const { webviewbridge } = this.refs;
+        switch (message) {
+            case "hello from webview":
+                webviewbridge.sendToBridge("hello from react-native");
+                break;
+            case "got the message inside webview":
+                ToastAndroid.show(message, ToastAndroid.SHORT);
+                console.log("we have got a message from webview! yeah");
+                break;
+            default:
+                break;
+        }
+    }
 
     render() {
         const injectScript = `
@@ -71,8 +88,9 @@ export default class Web extends Component {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.container}>
-                    <AdvancedWebView
-                        style={{height:560, width: 360}}
+                    <AdvancedWebView style={{height:560, width: 360}}
+                        ref="webviewbridge"
+                        onBridgeMessage={this._onBridgeMessage}
                         source={uri}
                         injectedJavaScript={injectScript}
                         javaScriptEnabled={true}
