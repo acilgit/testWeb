@@ -1,59 +1,124 @@
 package com.testweb.views;
 
-import android.support.annotation.Nullable;
-import android.util.Log;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import android.widget.Toast;
-
-import com.facebook.react.uimanager.SimpleViewManager;
-import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.uimanager.annotations.ReactProp;
-
 /**
- * Created by 18953 on 2016/5/19.
+ * Created by XY on 2016/5/21.
  */
-    public class AdvancedWebViewManager extends SimpleViewManager<AdvancedWebView> {
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 
-        public static final String REACT_CLASS = "RCTAdvancedWebView";
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.views.webview.WebViewConfig;
 
-        @Override
-        public String getName() {
-            return REACT_CLASS;
-        }
+import java.util.Map;
 
-        @Override
+import javax.annotation.Nullable;
 
-        protected AdvancedWebView createViewInstance(ThemedReactContext reactContext) {
-            AdvancedWebView webView= new AdvancedWebView(reactContext);
-           /* webView.setWebViewClient(new WebViewClient(){
+public class AdvancedWebViewManager extends ReactAdvancedWebViewManager {
 
-                @Override
-                public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                    view.loadUrl(url);
-                    return true;
-                }
-            });*/
-            return webView;
-        }
+    private static final String REACT_CLASS = "RCTXAdvancedWebView";
+//    private static final String REACT_CLASS = "RCTWebViewBridge";
 
-        @ReactProp(name = "textZoom")
-        public void setTextZoom(AdvancedWebView view, @Nullable int zoom) {
-            Log.e("TAG", "setTextZoom");
-//            Toast.makeText()
-            view.getSettings().setTextZoom(zoom);
-        }
+    public static final int COMMAND_INJECT_BRIDGE_SCRIPT = 100;
+    public static final int COMMAND_SEND_TO_BRIDGE = 101;
 
-        @ReactProp(name = "url")
-        public void setUrl(AdvancedWebView view, @Nullable String url) {
-            Log.e("TAG", "setUrl");
-            view.loadUrl(url);
-        }
+    private boolean initializedBridge;
 
-        @ReactProp(name = "html")
-        public void setHtml(AdvancedWebView view,@Nullable String html) {
-            Log.e("TAG", "setHtml");
-            view.loadData(html, "text/html; charset=utf-8", "UTF-8");
-        }
-
+    public AdvancedWebViewManager() {
+        super();
+        initializedBridge = false;
     }
+
+    public AdvancedWebViewManager(WebViewConfig webViewConfig) {
+        super(webViewConfig);
+        initializedBridge = false;
+    }
+
+    @Override
+    public String getName() {
+        return REACT_CLASS;
+    }
+
+    @Override
+    public @Nullable Map<String, Integer> getCommandsMap() {
+        Map<String, Integer> commandsMap = super.getCommandsMap();
+
+        commandsMap.put("injectBridgeScript", COMMAND_INJECT_BRIDGE_SCRIPT);
+        commandsMap.put("sendToBridge", COMMAND_SEND_TO_BRIDGE);
+
+        return commandsMap;
+    }
+
+    @Override
+    public void receiveCommand(AdvancedWebView root, int commandId, @Nullable ReadableArray args) {
+        super.receiveCommand(root, commandId, args);
+
+        switch (commandId) {
+            case COMMAND_INJECT_BRIDGE_SCRIPT:
+                injectBridgeScript(root);
+                break;
+            case COMMAND_SEND_TO_BRIDGE:
+                sendToBridge(root, args.getString(0));
+                break;
+            default:
+                //do nothing!!!!
+        }
+    }
+
+    private void sendToBridge(WebView root, String message) {
+        //root.loadUrl("javascript:(function() {\n" + script + ";\n})();");
+        String script = "WebViewBridge.onMessage('" + message + "');";
+        AdvancedWebViewManager.evaluateJavascript(root, script);
+    }
+
+    private void injectBridgeScript(WebView root) {
+        //this code needs to be called once per context
+        if (!initializedBridge) {
+            root.addJavascriptInterface(new JavascriptBridge((ReactContext) root.getContext()), "WebViewBridgeAndroid");
+            initializedBridge = true;
+            root.reload();
+        }
+
+        // this code needs to be executed everytime a url changes.
+        AdvancedWebViewManager.evaluateJavascript(root, ""
+                + "(function() {"
+                + "if (window.WebViewBridge) return;"
+                + "var customEvent = document.createEvent('Event');"
+                + "var WebViewBridge = {"
+                + "send: function(message) { WebViewBridgeAndroid.send(message); },"
+                + "onMessage: function() {}"
+                + "};"
+                + "window.WebViewBridge = WebViewBridge;"
+                + "customEvent.initEvent('WebViewBridge', true, true);"
+                + "document.dispatchEvent(customEvent);"
+                + "}());");
+    }
+
+    static private void evaluateJavascript(WebView root, String javascript) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            root.evaluateJavascript(javascript, null);
+        } else {
+            root.loadUrl("javascript:" + javascript);
+        }
+    }
+
+    class JavascriptBridge {
+        private ReactContext context;
+
+        public JavascriptBridge(ReactContext context) {
+            this.context = context;
+
+        }
+
+        @JavascriptInterface
+        public void send(String message) {
+            WritableMap params = Arguments.createMap();
+            params.putString("message", message);
+            context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("webViewBridgeMessage", params);
+        }
+    }
+}

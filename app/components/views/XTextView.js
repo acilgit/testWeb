@@ -1,18 +1,22 @@
 "use strict";
 import React, {PropTypes} from 'react';
-import {requireNativeComponent, ToastAndroid, WebView} from 'react-native';
+import {requireNativeComponent, View} from 'react-native';
 
 //var requireNativeComponent = require('requireNativeComponent');
 
 var iface = {
-    name: 'AdvancedWebView',
+    name: 'XTextView',
     propTypes: {
-        ...WebView.propTypes,
-        //message: PropTypes.func,
+        ...View.propTypes,
+        text: PropTypes.string,
+        textSize: PropTypes.number,
+        textColor: PropTypes.number,
+        isAlpha: PropTypes.bool,
+
     },
 };
 
-module.exports = requireNativeComponent('RCTXAdvancedWebView', iface);
+module.exports = requireNativeComponent('RCTTextView', iface);
 /*
 
 var RCTAdvancedWebView = requireNativeComponent('RCTAdvancedWebView', AdvancedWebView);

@@ -3,7 +3,7 @@ package com.testweb;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
-import com.testweb.views.AdvancedWebViewPackage;
+import com.testweb.views.XiuReactPackage;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,8 +35,8 @@ public class MainActivity extends ReactActivity {
     @Override
     protected List<ReactPackage> getPackages() {
         return Arrays.<ReactPackage>asList(
-                new MainReactPackage(),
-                new AdvancedWebViewPackage()
+            new MainReactPackage(),
+            new XiuReactPackage()
         );
     }
 }
