@@ -12,7 +12,7 @@ import {
     View
 } from 'react-native';
 
-//import AdvancedWebView from './app/components/views/XAdvancedWebView';
+//import AdvancedWebView from '../components/views/XAdvancedWebView';
 import AdvancedWebView from '../components/views/XWeb';
 import XTextView from '../components/views/XTextView';
 
@@ -22,7 +22,7 @@ export default class Web extends Component {
         super(props);
         // 初始状态
         this.state = {
-            title: 'Welcome to React Native X!',
+            title: 'Html',
             source: {uri: ''},
         };
     }
@@ -41,7 +41,7 @@ export default class Web extends Component {
             this.setState({source: require('../src/main.html')});
         //}
     }
-    _onBridgeMessage(message) {
+    _onWebViewMessage(message) {
         ToastAndroid.show(message, ToastAndroid.SHORT);
         let msg = JSON.parse(message);
         //dispatch(webActions.setText(msg.name));
@@ -51,6 +51,7 @@ export default class Web extends Component {
                 webviewbridge.sendToBridge("hello from react-native");
                 break;
             case "got the message inside webview":
+                this.setState({title: msg.name});
                 ToastAndroid.show(message, ToastAndroid.SHORT);
                 console.log("we have got a message from webview! yeah");
                 break;
@@ -62,22 +63,21 @@ export default class Web extends Component {
     render() {
         const injectScript = `
         function share(){
-            if (WebViewBridge) {
-                WebViewBridge.send(getShareJson());
-            }
+            var ret = prompt("JsBridge", getShareJson());
+            document.getElementById("input2").value = ret + count++;
         }
         var btn = document.getElementById("btn");
         btn.onclick=share;
         btn.value="sssssss";
         `;
-        let uri = this.state.source;
+        let {source, title} = this.state;
         return (
             <View style={styles.container}>
                 <View style={[{flexDirection:'row', height: 40, width: 360}]}>
                     <TouchableOpacity style={[{flex: 1}]}
                                       onPress={this._onPressHtml.bind(this)}>
                         <Text style={[styles.welcome, {flex: 1}]}>
-                            To Html
+                            {title}
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity  style={[{flex: 1}]}
@@ -90,8 +90,8 @@ export default class Web extends Component {
                 <View style={styles.container}>
                     <AdvancedWebView style={{height:560, width: 360}}
                         ref="webviewbridge"
-                        onBridgeMessage={this._onBridgeMessage}
-                        source={uri}
+                        onWebViewMessage={this._onWebViewMessage}
+                        source={source}
                         injectedJavaScript={injectScript}
                         javaScriptEnabled={true}
                         domStorageEnabled ={true}

@@ -15,11 +15,13 @@
 
     <script type="text/javascript" language="javascript">
 
+        var count = 0;
         function  getShareJson(){
             return JSON.stringify({id:10, name:"getShareJson", date:Date.now()});
         }
 
         function showHtmlcallJava2(){
+            document.getElementById("btn").value = Date.now()+ "";
             var str = window.jsObj.HtmlcallJava2("IT-homer blog");
             alert(str);
         }
@@ -33,6 +35,8 @@
         }
 
         function share2(){
+            var ret = prompt("JsBridge", JSON.stringify({id: 1000, name: "getSelf", date: Date.now()}));
+            document.getElementById("input").value = ret + count++;
             if (WebViewBridge) {
                 WebViewBridge.send(JSON.stringify({id:1000, name:"getSelf", date:Date.now()}));
             }
@@ -62,14 +66,15 @@ hello IT-homer
 
 <input id="btn" type="button" value="Share" onclick="share2()" />
 <br>
-<input type="button" value="HtmlcallJava2" onclick="share2()" />
-<input file="file" accept="image/*;capture=camera">
+<input id="btn2" type="button" value="Share" onclick="share2()" />
+<br>
+<input type="button" value="HtmlcallJava2" onclick="showHtmlcallJava2()" />
 <br>
 <br>
 <br>
 <br>
 
-<input id="id_input" style="width: 90%" type="text" value="null" />
+<input id="input2" style="width: 90%" type="text" value="null" />
 <br>
 <input type="button" value="JavacallHtml" onclick="window.jsObj.JavacallHtml()" />
 
@@ -77,7 +82,7 @@ hello IT-homer
 <br>
 <br>
 
-<input id="id_input2" style="width: 90%" type="text" value="null" />
+<input id="input" style="width: 90%" type="text" value="null" />
 <br>
 <input type="button" value="JavacallHtml2" onclick="window.jsObj.JavacallHtml2()" />
 

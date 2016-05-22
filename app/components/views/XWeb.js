@@ -60,7 +60,7 @@ class XWebViewBridge extends React.Component {
       }
 
     componentWillMount() {
-        DeviceEventEmitter.addListener("webViewBridgeMessage", (body) => {
+        DeviceEventEmitter.addListener("onMessage", (body) => {
             const { onBridgeMessage } = this.props;
             const message = body.message;
             if (onBridgeMessage) {
@@ -75,6 +75,8 @@ class XWebViewBridge extends React.Component {
 
     render() {
         var otherView = null;
+        otherView = <Text >ABCD</Text>;
+        /*
 
         if (this.state.viewState === WebViewBridgeState.LOADING) {
             otherView = this.props.renderLoading && this.props.renderLoading();
@@ -87,6 +89,7 @@ class XWebViewBridge extends React.Component {
         } else if (this.state.viewState !== WebViewBridgeState.IDLE) {
             console.error('RCTXAdvancedWebView invalid state encountered: ' + this.state.loading);
         }
+         */
 
         var webViewStyles = [styles.container, this.props.style];
         if (this.state.viewState === WebViewBridgeState.LOADING ||
@@ -104,7 +107,6 @@ class XWebViewBridge extends React.Component {
             console.warn('domStorageEnabledAndroid is deprecated. Use domStorageEnabled instead');
             domStorageEnabled = this.props.domStorageEnabledAndroid;
         }
-
         let {source, ...props} = {...this.props};
 
         let uri = resolveAssetSource(source);
@@ -156,6 +158,7 @@ class XWebViewBridge extends React.Component {
     }
 
     sendToBridge (message:string) {
+        ToastAndroid.show('sendToBridge'+message, ToastAndroid.SHORT);
         UIManager.dispatchViewManagerCommand(
             this.getWebViewBridgeHandle(),
             UIManager.RCTXAdvancedWebView.Commands.sendToBridge,
@@ -164,6 +167,7 @@ class XWebViewBridge extends React.Component {
     }
 
     injectBridgeScript () {
+        ToastAndroid.show('injectBridgeScript', ToastAndroid.SHORT);
         UIManager.dispatchViewManagerCommand(
             this.getWebViewBridgeHandle(),
             UIManager.RCTXAdvancedWebView.Commands.injectBridgeScript,
@@ -214,7 +218,6 @@ class XWebViewBridge extends React.Component {
         });
         this.updateNavigationState(event);
     }
-
 };
 
 var styles = StyleSheet.create({
@@ -227,13 +230,12 @@ var styles = StyleSheet.create({
     },
 });
 
-
 XWebViewBridge.propTypes = {
     ...WebView.propTypes,
     /**
-     * Will be called once the message is being sent from webview
+     * Will be called once the message is being sent from webview  RCTXAdvancedWebView
      */
-    onBridgeMessage: PropTypes.func,
+    onMessage: PropTypes.func,
 };
 
 var RCTAdvancedWebView = requireNativeComponent('RCTXAdvancedWebView', XWebViewBridge);

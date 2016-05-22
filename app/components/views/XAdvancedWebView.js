@@ -12,7 +12,7 @@ var iface = {
     },
 };
 
-module.exports = requireNativeComponent('RCTXAdvancedWebView', iface);
+module.exports = requireNativeComponent('RCTWebView', iface);
 /*
 
 var RCTAdvancedWebView = requireNativeComponent('RCTAdvancedWebView', AdvancedWebView);

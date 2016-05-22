@@ -3,6 +3,7 @@ package com.testweb.views;
 /**
  * Created by XY on 2016/5/21.
  */
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -11,13 +12,14 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.views.webview.ReactWebViewManager;
 import com.facebook.react.views.webview.WebViewConfig;
 
 import java.util.Map;
 
 import javax.annotation.Nullable;
 
-public class AdvancedWebViewManager extends ReactAdvancedWebViewManager {
+public class AdvancedWebViewManager extends ReactWebViewManager {
 
     private static final String REACT_CLASS = "RCTXAdvancedWebView";
 //    private static final String REACT_CLASS = "RCTWebViewBridge";
@@ -53,7 +55,8 @@ public class AdvancedWebViewManager extends ReactAdvancedWebViewManager {
     }
 
     @Override
-    public void receiveCommand(AdvancedWebView root, int commandId, @Nullable ReadableArray args) {
+    public void receiveCommand(WebView root, int commandId, @Nullable ReadableArray args) {
+        Log.e("ReactTag", " receiveCommand  ");
         super.receiveCommand(root, commandId, args);
 
         switch (commandId) {
@@ -72,9 +75,12 @@ public class AdvancedWebViewManager extends ReactAdvancedWebViewManager {
         //root.loadUrl("javascript:(function() {\n" + script + ";\n})();");
         String script = "WebViewBridge.onMessage('" + message + "');";
         AdvancedWebViewManager.evaluateJavascript(root, script);
+
+        Log.e("ReactTag", " sendToBridge  " + message);
     }
 
     private void injectBridgeScript(WebView root) {
+        Log.e("ReactTag", " injectBridgeScript  ");
         //this code needs to be called once per context
         if (!initializedBridge) {
             root.addJavascriptInterface(new JavascriptBridge((ReactContext) root.getContext()), "WebViewBridgeAndroid");
