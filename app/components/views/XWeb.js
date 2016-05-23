@@ -53,6 +53,8 @@ class XWebViewBridge extends React.Component {
       constructor(props) {
         super(props);
         // 初始状态
+          this.injectBridgeScript = this.injectBridgeScript.bind(this);
+          this.injectBridgeScript = this.injectBridgeScript.bind(this);
         this.state = {
             viewState: WebViewBridgeState.IDLE,
             lastErrorEvent: null,
@@ -61,10 +63,10 @@ class XWebViewBridge extends React.Component {
 
     componentWillMount() {
         DeviceEventEmitter.addListener("onMessage", (body) => {
-            const { onBridgeMessage } = this.props;
+            const { onWebViewMessage } = this.props;
             const message = body.message;
-            if (onBridgeMessage) {
-                onBridgeMessage(message);
+            if (onWebViewMessage) {
+                onWebViewMessage(message);
             }
         });
 
@@ -235,7 +237,7 @@ XWebViewBridge.propTypes = {
     /**
      * Will be called once the message is being sent from webview  RCTXAdvancedWebView
      */
-    onMessage: PropTypes.func,
+    onWebViewMessage: PropTypes.func,
 };
 
 var RCTAdvancedWebView = requireNativeComponent('RCTXAdvancedWebView', XWebViewBridge);

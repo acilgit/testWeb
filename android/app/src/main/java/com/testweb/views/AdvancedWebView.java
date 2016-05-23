@@ -47,7 +47,6 @@ import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.PermissionRequest;
 import android.webkit.WebStorage.QuotaUpdater;
-import android.app.Fragment;
 import android.util.Base64;
 import android.os.Build;
 import android.webkit.DownloadListener;
@@ -75,6 +74,10 @@ import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.views.webview.events.TopLoadingErrorEvent;
 import com.facebook.react.views.webview.events.TopLoadingFinishEvent;
 import com.facebook.react.views.webview.events.TopLoadingStartEvent;
+import com.fasterxml.jackson.core.JsonParser;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.MissingResourceException;
 import java.util.Locale;
@@ -152,6 +155,69 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
         super(context, attrs, defStyleAttr);
         init(context);
     }
+    @SuppressLint({"SetJavaScriptEnabled"})
+    protected void init(Context context) {
+        if (context instanceof Activity) {
+            mActivity = new WeakReference<Activity>((Activity) context);
+        }
+
+        mLanguageIso3 = getLanguageIso3();
+
+        setFocusable(true);
+        setFocusableInTouchMode(true);
+
+        setSaveEnabled(true);
+
+        final String filesDir = context.getFilesDir().getPath();
+        final String databaseDir = filesDir.substring(0, filesDir.lastIndexOf("/")) + DATABASES_SUB_FOLDER;
+
+        final WebSettings webSettings = getSettings();
+        webSettings.setAllowFileAccess(false);
+        setAllowAccessFromFileUrls(webSettings, false);
+        webSettings.setBuiltInZoomControls(false);
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        if (Build.VERSION.SDK_INT < 18) {
+            webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
+        }
+        webSettings.setDatabaseEnabled(true);
+        if (Build.VERSION.SDK_INT < 19) {
+            webSettings.setDatabasePath(databaseDir);
+        }
+        setMixedContentAllowed(webSettings, true);
+
+        setThirdPartyCookiesEnabled(true);
+
+        initWebViewClient();
+        initChromeWebViewClient();
+//        setWebViewClient(new AdvancedWebViewClient());
+//        super.setWebViewClient(new );
+
+//        setWebChromeClient(new AdvancedJsWebChromeClient());
+
+        setDownloadListener(new DownloadListener() {
+
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
+                if (mListener != null) {
+                    mListener.onDownloadRequested(url, userAgent, contentDisposition, mimetype, contentLength);
+                }
+            }
+
+        });
+    }
+
+    public void initWebViewClient() {
+        AdvancedWebViewClient client=new AdvancedWebViewClient();
+//        WebViewClient client=new WebViewClient();
+        setWebViewClient(client);
+    }
+
+    public void initChromeWebViewClient() {
+        AdvancedJsWebChromeClient client=new AdvancedJsWebChromeClient();
+//        WebChromeClient client=new WebChromeClient();
+        setWebChromeClient(client);
+    }
 
     public void setListener(final Activity activity, final Listener listener) {
         setListener(activity, listener, REQUEST_CODE_FILE_PICKER);
@@ -175,13 +241,15 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
     @Override
     public void setWebViewClient(final WebViewClient client) {
         Log.e("ReactTag", "(setWebClient" + ")");
-        mCustomWebViewClient = client;
+//        mCustomWebViewClient = client;
+        super.setWebViewClient(client);
     }
 
     @Override
     public void setWebChromeClient(final WebChromeClient client) {
         Log.e("ReactTag", "(setWebChromeClient" + ")");
-        mCustomWebChromeClient = client;
+//        mCustomWebChromeClient = client;
+        super.setWebChromeClient(client);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -385,63 +453,6 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
         webSettings.setBuiltInZoomControls(enabled);
     }
 
-    @SuppressLint({"SetJavaScriptEnabled"})
-    protected void init(Context context) {
-        if (context instanceof Activity) {
-            mActivity = new WeakReference<Activity>((Activity) context);
-        }
-
-        mLanguageIso3 = getLanguageIso3();
-
-        setFocusable(true);
-        setFocusableInTouchMode(true);
-
-        setSaveEnabled(true);
-
-        final String filesDir = context.getFilesDir().getPath();
-        final String databaseDir = filesDir.substring(0, filesDir.lastIndexOf("/")) + DATABASES_SUB_FOLDER;
-
-        final WebSettings webSettings = getSettings();
-        webSettings.setAllowFileAccess(false);
-        setAllowAccessFromFileUrls(webSettings, false);
-        webSettings.setBuiltInZoomControls(false);
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        if (Build.VERSION.SDK_INT < 18) {
-            webSettings.setRenderPriority(WebSettings.RenderPriority.HIGH);
-        }
-        webSettings.setDatabaseEnabled(true);
-        if (Build.VERSION.SDK_INT < 19) {
-            webSettings.setDatabasePath(databaseDir);
-        }
-        setMixedContentAllowed(webSettings, true);
-
-        setThirdPartyCookiesEnabled(true);
-
-//        setWebViewClient(new AdvancedWebViewClient());
-//        super.setWebViewClient(new );
-
-//        setWebChromeClient(new AdvancedJsWebChromeClient());
-
-        setDownloadListener(new DownloadListener() {
-
-            @Override
-            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
-                if (mListener != null) {
-                    mListener.onDownloadRequested(url, userAgent, contentDisposition, mimetype, contentLength);
-                }
-            }
-
-        });
-    }
-
-    public void initWebViewClient() {
-        setWebViewClient(new AdvancedWebViewClient());
-    }
-
-    public void initChromeWebViewClient() {
-        setWebChromeClient(new AdvancedJsWebChromeClient());
-    }
 
     @Override
     public void loadUrl(final String url, Map<String, String> additionalHttpHeaders) {
@@ -749,7 +760,8 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
         @Override
         public void onPageFinished(WebView webView, String url) {
-            if (!hasError()) {
+            Log.e("ReactTag", "onPageFinished ");
+           /* if (!hasError()) {
                 if (mListener != null) {
                     mListener.onPageFinished(url);
                 }
@@ -757,10 +769,9 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
             if (mCustomWebViewClient != null) {
                 mCustomWebViewClient.onPageFinished(webView, url);
-            }
-//            super.onPageFinished(webView, url);
+            }*/
+            super.onPageFinished(webView, url);
 
-            Log.e("ReactTag", "onPageFinished ");
             if (!mLastLoadFailed) {
                 AdvancedWebView reactWebView = (AdvancedWebView) webView;
                 reactWebView.callInjectedJavaScript();
@@ -770,15 +781,16 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
         @Override
         public void onPageStarted(WebView webView, String url, Bitmap favicon) {
-            if (!hasError()) {
+            Log.e("ReactTag", " onPageStarted");
+           /* if (!hasError()) {
                 if (mListener != null) {
                     mListener.onPageStarted(url, favicon);
                 }
             }
             if (mCustomWebViewClient != null) {
                 mCustomWebViewClient.onPageStarted(webView, url, favicon);
-            }
-//            super.onPageStarted(webView, url, favicon);
+            }*/
+            super.onPageStarted(webView, url, favicon);
             mLastLoadFailed = false;
 
             dispatchEvent(webView, new TopLoadingStartEvent(webView.getId(), SystemClock.nanoTime(), createWebViewEvent(webView, url)));
@@ -786,15 +798,16 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
         @Override
         public void onReceivedError(WebView webView, int errorCode, String description, String failingUrl) {
-            setLastError();
+            Log.e("ReactTag", " onReceivedError");
+           /* setLastError();
             if (mListener != null) {
                 mListener.onPageError(errorCode, description, failingUrl);
             }
 
             if (mCustomWebViewClient != null) {
                 mCustomWebViewClient.onReceivedError(webView, errorCode, description, failingUrl);
-            }
-//            super.onReceivedError(webView, errorCode, description, failingUrl);
+            }*/
+            super.onReceivedError(webView, errorCode, description, failingUrl);
             mLastLoadFailed = true;
 
             // In case of an error JS side expect to get a finish event first, and then get an error event
@@ -810,12 +823,12 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
         @Override
         public void doUpdateVisitedHistory(WebView webView, String url, boolean isReload) {
-            if (mCustomWebViewClient != null) {
-                mCustomWebViewClient.doUpdateVisitedHistory(webView, url, isReload);
-            } else {
-                super.doUpdateVisitedHistory(webView, url, isReload);
-            }
-//            super.doUpdateVisitedHistory(webView, url, isReload);
+//            if (mCustomWebViewClient != null) {
+//                mCustomWebViewClient.doUpdateVisitedHistory(webView, url, isReload);
+//            } else {
+//                super.doUpdateVisitedHistory(webView, url, isReload);
+//            }
+            super.doUpdateVisitedHistory(webView, url, isReload);
 
             dispatchEvent(webView, new TopLoadingStartEvent(webView.getId(), SystemClock.nanoTime(), createWebViewEvent(webView, url)));
         }
@@ -825,6 +838,7 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
         }
 
         private void dispatchEvent(WebView webView, Event event) {
+            Log.e("ReactTag", " dispatchEvent");
             ReactContext reactContext = (ReactContext) webView.getContext();
             EventDispatcher eventDispatcher =
                     reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher();
@@ -1005,14 +1019,11 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
     public class AdvancedJsWebChromeClient extends WebChromeClient {
 
-        public static final String DEFAULT_VALUE = "JsBridge";
+        public static final String DEFAULT_VALUE = "MESSAGE";
+        public static final String DEFAULT_RESULT = "{\"result\":true}";
         public static final String FEEDBACK = "OK";
 
-        public AdvancedJsWebChromeClient() {
-            super();
-            Log.e("ReactTag", " AdvancedJsWebChromeClient created ");
-        }
-
+        @Override
         public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
           /*  if (mCustomWebChromeClient != null) {
                 return mCustomWebChromeClient.onJsPrompt(view, url, message, defaultValue, result);
@@ -1020,17 +1031,22 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
                 return super.onJsPrompt(view, url, message, defaultValue, result);
             }*/
 
-            Log.e("ReactTag", message);
+            Log.e("ReactTag", " onJsPrompt "+message +" def: " + defaultValue);
             if (defaultValue != null && defaultValue.equals(DEFAULT_VALUE)) {
                 try {
-                    onReceivedJsMessage(message);
-                    result.confirm(FEEDBACK);
+                   String resultJson = onReceivedJsMessage(message);
+                    if (JSONObject .resultJson) {
+                    }
+                    result.confirm(resultJson);
                     return true;
                 } catch (Exception e) {
                     e.printStackTrace();
+                    result.confirm("{\"result\":false}");
+                    return true;
                 }
             }
-            return false;
+            result.confirm("{\"result\":false}");
+            return true;
         }
 
         // file upload callback (Android 2.2 (API level 8) -- Android 2.3 (API level 10)) (hidden method)
@@ -1383,6 +1399,6 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
     }
 
-    public abstract void onReceivedJsMessage(String message) throws Exception;
+    public abstract String onReceivedJsMessage(String message) throws Exception;
 
 }

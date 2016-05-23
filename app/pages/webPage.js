@@ -7,6 +7,7 @@ import React, { Component } from 'react';
 import {
     Navigator,
     StyleSheet,
+    ToastAndroid,
     TouchableOpacity,
     Text,
     View
@@ -45,10 +46,10 @@ export default class Web extends Component {
         ToastAndroid.show(message, ToastAndroid.SHORT);
         let msg = JSON.parse(message);
         //dispatch(webActions.setText(msg.name));
-        const { webviewbridge } = this.refs;
+        //const { webviewbridge } = this.refs;
         switch (message) {
             case "hello from webview":
-                webviewbridge.sendToBridge("hello from react-native");
+                //webviewbridge.sendToBridge("hello from react-native");
                 break;
             case "got the message inside webview":
                 this.setState({title: msg.name});
@@ -63,7 +64,7 @@ export default class Web extends Component {
     render() {
         const injectScript = `
         function share(){
-            var ret = prompt("JsBridge", getShareJson());
+            var ret = prompt( getShareJson(),"MESSAGE");
             document.getElementById("input2").value = ret + count++;
         }
         var btn = document.getElementById("btn");
@@ -92,15 +93,14 @@ export default class Web extends Component {
                         ref="webviewbridge"
                         onWebViewMessage={this._onWebViewMessage}
                         source={source}
-                        injectedJavaScript={injectScript}
                         javaScriptEnabled={true}
                         domStorageEnabled ={true}
+                        injectedJavaScript={injectScript}
                     />
                 </View>
             </View>
         );
     }
-
     //  source={{uri:'http://www.jcczgb.com/wap_new/tmpl/member/userinfo.html'}}
     //  url={'http://www.jcczgb.com/wap_new/tmpl/member/userinfo.html'}
 //<XTextView style={{height:40, width: 300}}

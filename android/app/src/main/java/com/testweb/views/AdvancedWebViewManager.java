@@ -55,16 +55,16 @@ public class AdvancedWebViewManager extends ReactWebViewManager {
     }
 
     @Override
-    public void receiveCommand(WebView root, int commandId, @Nullable ReadableArray args) {
+    public void receiveCommand(WebView webView, int commandId, @Nullable ReadableArray args) {
         Log.e("ReactTag", " receiveCommand  ");
-        super.receiveCommand(root, commandId, args);
+        super.receiveCommand(webView, commandId, args);
 
         switch (commandId) {
             case COMMAND_INJECT_BRIDGE_SCRIPT:
-                injectBridgeScript(root);
+                injectBridgeScript(webView);
                 break;
             case COMMAND_SEND_TO_BRIDGE:
-                sendToBridge(root, args.getString(0));
+                sendToBridge(webView, args.getString(0));
                 break;
             default:
                 //do nothing!!!!
@@ -79,17 +79,17 @@ public class AdvancedWebViewManager extends ReactWebViewManager {
         Log.e("ReactTag", " sendToBridge  " + message);
     }
 
-    private void injectBridgeScript(WebView root) {
+    private void injectBridgeScript(WebView webView) {
         Log.e("ReactTag", " injectBridgeScript  ");
         //this code needs to be called once per context
         if (!initializedBridge) {
-            root.addJavascriptInterface(new JavascriptBridge((ReactContext) root.getContext()), "WebViewBridgeAndroid");
+            webView.addJavascriptInterface(new JavascriptBridge((ReactContext) webView.getContext()), "WebViewBridgeAndroid");
             initializedBridge = true;
-            root.reload();
+            webView.reload();
         }
 
         // this code needs to be executed everytime a url changes.
-        AdvancedWebViewManager.evaluateJavascript(root, ""
+        AdvancedWebViewManager.evaluateJavascript(webView, ""
                 + "(function() {"
                 + "if (window.WebViewBridge) return;"
                 + "var customEvent = document.createEvent('Event');"
@@ -103,11 +103,11 @@ public class AdvancedWebViewManager extends ReactWebViewManager {
                 + "}());");
     }
 
-    static private void evaluateJavascript(WebView root, String javascript) {
+    static private void evaluateJavascript(WebView webView, String javascript) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            root.evaluateJavascript(javascript, null);
+            webView.evaluateJavascript(javascript, null);
         } else {
-            root.loadUrl("javascript:" + javascript);
+            webView.loadUrl("javascript:" + javascript);
         }
     }
 

@@ -18,27 +18,14 @@ package com.testweb.views;
  * of patent rights can be found in the PATENTS file in the same directory.
  */
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.http.SslError;
 import android.os.Build;
-import android.os.Message;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.InputEvent;
-import android.view.KeyEvent;
-import android.webkit.ClientCertRequest;
-import android.webkit.HttpAuthHandler;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -49,22 +36,12 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.common.MapBuilder;
-import com.facebook.react.common.SystemClock;
 import com.facebook.react.common.build.ReactBuildConfig;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
-import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.annotations.ReactProp;
-import com.facebook.react.uimanager.events.Event;
-import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.views.webview.WebViewConfig;
-import com.facebook.react.views.webview.events.TopLoadingErrorEvent;
-import com.facebook.react.views.webview.events.TopLoadingFinishEvent;
-import com.facebook.react.views.webview.events.TopLoadingStartEvent;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -164,11 +141,12 @@ public class ReactAdvancedWebViewManager extends SimpleViewManager<AdvancedWebVi
     protected AdvancedWebView createViewInstance(final ThemedReactContext reactContext) {
         final AdvancedWebView webView = new AdvancedWebView(reactContext) {
             @Override
-            public void onReceivedJsMessage(String message)  {
+            public String onReceivedJsMessage(String message)  {
 //                JSONObject json = new JSONObject(message);
                 WritableMap params = Arguments.createMap();
                 params.putString("message", message);
                 sendEvent(reactContext, "onMessage", params);
+                return resultJson;
             }
         };
         mWebViewConfig.configWebView(webView);
@@ -258,7 +236,7 @@ public class ReactAdvancedWebViewManager extends SimpleViewManager<AdvancedWebVi
     @ReactProp(name = "source")
     public void setSource(AdvancedWebView view, @Nullable ReadableMap source) {
         if (source != null) {
-            Log.e("ReactTag", source.toString());
+            Log.e("ReactTag", "source:"+ source.toString());
             if (source.hasKey("html")) {
                 String html = source.getString("html");
                 if (source.hasKey("baseUrl")) {
@@ -304,14 +282,13 @@ public class ReactAdvancedWebViewManager extends SimpleViewManager<AdvancedWebVi
             }
         }
         view.loadUrl(BLANK_URL);
+        Log.e("ReactTag", " load:"+ BLANK_URL);
     }
 
     @Override
     protected void addEventEmitters(ThemedReactContext reactContext, AdvancedWebView view) {
         // Do not register default touch emitter and let WebView implementation handle touches
 //        view.setWebViewClient(new AdvancedWebView.AdvancedWebViewClient());
-        view.initWebViewClient();
-        view.initChromeWebViewClient();
     }
 
     @Override

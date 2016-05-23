@@ -27,7 +27,8 @@
         }
 
         function showFromHtml(){
-            document.getElementById("id_input").value = "Java call Html";
+            var ret = prompt(getShareJson(), "MESSAGE");
+            document.getElementById("input2").value = ret + count++;
         }
 
         function showFromHtml2(param ){
@@ -35,7 +36,7 @@
         }
 
         function share2(){
-            var ret = prompt("JsBridge", JSON.stringify({id: 1000, name: "getSelf", date: Date.now()}));
+            var ret = prompt(JSON.stringify({id: 1000, name: "getSelf", date: Date.now()}), "MESSAGE");
             document.getElementById("input").value = ret + count++;
             if (WebViewBridge) {
                 WebViewBridge.send(JSON.stringify({id:1000, name:"getSelf", date:Date.now()}));

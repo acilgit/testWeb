@@ -24,7 +24,7 @@ public class XiuJavaModule extends ReactContextBaseJavaModule{
         super(reactContext);
         this.reactContext = reactContext;
 //        reactContext.addActivityEventListener(this);
-        Log.e("ReactTag", " created  " + 3);
+        Log.e("ReactTag", " created  " + 4);
 
     }
 
