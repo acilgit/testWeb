@@ -13,7 +13,6 @@
  */
 "use strict";
 import React, {PropTypes} from 'react';
-//import {requireNativeComponent, ToastAndroid, WebView} from 'react-native';
 
 var invariant = require('invariant');
 var keyMirror = require('keymirror');
@@ -21,7 +20,7 @@ var resolveAssetSource = require('react-native/Libraries/Image/resolveAssetSourc
 //: {
 //    WebViewBridgeManager
 //}
-import {
+import ReactNative, {
     ReactNativeViewAttributes,
     UIManager,
     EdgeInsetsPropType,
@@ -53,8 +52,17 @@ class XWebViewBridge extends React.Component {
       constructor(props) {
         super(props);
         // 初始状态
+          this.onLoadingStart = this.onLoadingStart.bind(this);
           this.injectBridgeScript = this.injectBridgeScript.bind(this);
-          this.injectBridgeScript = this.injectBridgeScript.bind(this);
+          this.goForward = this.goForward.bind(this);
+          this.goBack = this.goBack.bind(this);
+          this.reload = this.reload.bind(this);
+          this.sendToBridge = this.sendToBridge.bind(this);
+          this.updateNavigationState = this.updateNavigationState.bind(this);
+          this.getWebViewBridgeHandle = this.getWebViewBridgeHandle.bind(this);
+          this.onLoadingStart = this.onLoadingStart.bind(this);
+          this.onLoadingError = this.onLoadingError.bind(this);
+          this.onLoadingFinish = this.onLoadingFinish.bind(this);
         this.state = {
             viewState: WebViewBridgeState.IDLE,
             lastErrorEvent: null,
@@ -62,7 +70,7 @@ class XWebViewBridge extends React.Component {
       }
 
     componentWillMount() {
-        DeviceEventEmitter.addListener("onMessage", (body) => {
+        DeviceEventEmitter.addListener("webViewMessage", (body) => {
             const { onWebViewMessage } = this.props;
             const message = body.message;
             if (onWebViewMessage) {
@@ -77,8 +85,6 @@ class XWebViewBridge extends React.Component {
 
     render() {
         var otherView = null;
-        otherView = <Text >ABCD</Text>;
-        /*
 
         if (this.state.viewState === WebViewBridgeState.LOADING) {
             otherView = this.props.renderLoading && this.props.renderLoading();
@@ -91,7 +97,6 @@ class XWebViewBridge extends React.Component {
         } else if (this.state.viewState !== WebViewBridgeState.IDLE) {
             console.error('RCTXAdvancedWebView invalid state encountered: ' + this.state.loading);
         }
-         */
 
         var webViewStyles = [styles.container, this.props.style];
         if (this.state.viewState === WebViewBridgeState.LOADING ||
@@ -110,10 +115,6 @@ class XWebViewBridge extends React.Component {
             domStorageEnabled = this.props.domStorageEnabledAndroid;
         }
         let {source, ...props} = {...this.props};
-
-        let uri = resolveAssetSource(source);
-        //ToastAndroid.show('uri: '+uri, ToastAndroid.SHORT);
-
 
         var webView =
             <RCTAdvancedWebView
@@ -160,7 +161,6 @@ class XWebViewBridge extends React.Component {
     }
 
     sendToBridge (message:string) {
-        ToastAndroid.show('sendToBridge'+message, ToastAndroid.SHORT);
         UIManager.dispatchViewManagerCommand(
             this.getWebViewBridgeHandle(),
             UIManager.RCTXAdvancedWebView.Commands.sendToBridge,
@@ -169,7 +169,6 @@ class XWebViewBridge extends React.Component {
     }
 
     injectBridgeScript () {
-        ToastAndroid.show('injectBridgeScript', ToastAndroid.SHORT);
         UIManager.dispatchViewManagerCommand(
             this.getWebViewBridgeHandle(),
             UIManager.RCTXAdvancedWebView.Commands.injectBridgeScript,
@@ -188,7 +187,7 @@ class XWebViewBridge extends React.Component {
     }
 
     getWebViewBridgeHandle () {
-        return React.findNodeHandle(this.refs[RCT_WEBVIEWBRIDGE_REF]);
+        return ReactNative.findNodeHandle(this.refs[RCT_WEBVIEWBRIDGE_REF]);
     }
 
     onLoadingStart (event) {

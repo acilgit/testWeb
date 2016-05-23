@@ -94,7 +94,7 @@ import javax.annotation.Nullable;
  * Advanced WebView component for Android that works as intended out of the box
  */
 @SuppressWarnings("deprecation")
-public abstract class AdvancedWebView extends WebView implements LifecycleEventListener {
+public class AdvancedWebView extends WebView implements LifecycleEventListener {
 
     public interface Listener {
         void onPageStarted(String url, Bitmap favicon);
@@ -188,7 +188,7 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
         setThirdPartyCookiesEnabled(true);
 
-        initWebViewClient();
+//        initWebViewClient();
         initChromeWebViewClient();
 //        setWebViewClient(new AdvancedWebViewClient());
 //        super.setWebViewClient(new );
@@ -662,9 +662,7 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
     public void callInjectedJavaScript() {
 
         Log.e("ReactTag", " callInjectedJavaScript ");
-        if (getSettings().getJavaScriptEnabled() &&
-                injectedJS != null &&
-                !TextUtils.isEmpty(injectedJS)) {
+        if (getSettings().getJavaScriptEnabled() && injectedJS != null && !TextUtils.isEmpty(injectedJS)) {
             loadUrl("javascript:(function() {\n" + injectedJS + ";\n})();");
         }
     }
@@ -772,9 +770,8 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
             }*/
             super.onPageFinished(webView, url);
 
-            if (!mLastLoadFailed) {
-                AdvancedWebView reactWebView = (AdvancedWebView) webView;
-                reactWebView.callInjectedJavaScript();
+            if (!mLastLoadFailed){
+                ((AdvancedWebView) webView).callInjectedJavaScript();
                 emitFinishEvent(webView, url);
             }
         }
@@ -838,10 +835,9 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
         }
 
         private void dispatchEvent(WebView webView, Event event) {
-            Log.e("ReactTag", " dispatchEvent");
+            Log.e("ReactTag", " dispatchEvent "+ event.getEventName());
             ReactContext reactContext = (ReactContext) webView.getContext();
-            EventDispatcher eventDispatcher =
-                    reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher();
+            EventDispatcher eventDispatcher = reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher();
             eventDispatcher.dispatchEvent(event);
         }
 
@@ -1025,14 +1021,14 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
         @Override
         public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
-          /*  if (mCustomWebChromeClient != null) {
+            if (mCustomWebChromeClient != null) {
                 return mCustomWebChromeClient.onJsPrompt(view, url, message, defaultValue, result);
             } else {
                 return super.onJsPrompt(view, url, message, defaultValue, result);
-            }*/
+            }
 
-            Log.e("ReactTag", " onJsPrompt "+message +" def: " + defaultValue);
-            if (defaultValue != null && defaultValue.equals(DEFAULT_VALUE)) {
+           /*     Log.e("ReactTag", " onJsPrompt "+message +" def: " + defaultValue);
+        if (defaultValue != null && defaultValue.equals(DEFAULT_VALUE)) {
                 try {
                    String resultJson = onReceivedJsMessage(message);
                     if (JSONObject .resultJson) {
@@ -1046,7 +1042,7 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
                 }
             }
             result.confirm("{\"result\":false}");
-            return true;
+            return true;*/
         }
 
         // file upload callback (Android 2.2 (API level 8) -- Android 2.3 (API level 10)) (hidden method)
@@ -1399,6 +1395,6 @@ public abstract class AdvancedWebView extends WebView implements LifecycleEventL
 
     }
 
-    public abstract String onReceivedJsMessage(String message) throws Exception;
+//    public abstract String onReceivedJsMessage(String message) throws Exception;
 
 }

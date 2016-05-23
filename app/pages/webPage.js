@@ -61,16 +61,52 @@ export default class Web extends Component {
         }
     }
 
+    _sendMessageToBridge() {
+        var message = "hello";
+        this.refs['webviewbridge'].sendToBridge(message);
+        //let msg = JSON.parse(message);
+        //dispatch(webActions.setText(msg.name));
+        //const { webviewbridge } = this.refs;
+        //switch (message) {
+        //    case "hello from webview":
+        //        //webviewbridge.sendToBridge("hello from react-native");
+        //        break;
+        //    case "got the message inside webview":
+        //        this.setState({title: msg.name});
+        //        ToastAndroid.show(message, ToastAndroid.SHORT);
+        //        console.log("we have got a message from webview! yeah");
+        //        break;
+        //    default:
+        //        break;
+        //}
+
+    }
+
     render() {
         const injectScript = `
         function share(){
-            var ret = prompt( getShareJson(),"MESSAGE");
+            if(WebViewBridge) WebViewBridge.send(getShareJson());
             document.getElementById("input2").value = ret + count++;
         }
+        function onMsg(message){
+            var v = "false ";
+            if (message === "hello") {
+                v="hello! ";
+            }
+            document.getElementById("input2").value = v + count++;
+        }
+
         var btn = document.getElementById("btn");
         btn.onclick=share;
         btn.value="sssssss";
-        `;
+
+        if (WebViewBridge) {
+            document.getElementById("input2").value = "Bridge Waiting!";
+            WebViewBridge.onMessage = onMsg;
+        }
+        `;/*WebViewBridge.onMessage = */
+        //(function () {
+        //}());
         let {source, title} = this.state;
         return (
             <View style={styles.container}>
@@ -98,6 +134,12 @@ export default class Web extends Component {
                         injectedJavaScript={injectScript}
                     />
                 </View>
+                <TouchableOpacity style={[{height: 60}]}
+                                  onPress={this._sendMessageToBridge.bind(this)}>
+                    <Text style={[styles.welcome, {flex: 1}]}>
+                        {title}
+                    </Text>
+                </TouchableOpacity>
             </View>
         );
     }

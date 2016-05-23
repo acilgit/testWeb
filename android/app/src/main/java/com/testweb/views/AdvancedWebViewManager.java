@@ -3,6 +3,7 @@ package com.testweb.views;
 /**
  * Created by XY on 2016/5/21.
  */
+import android.annotation.SuppressLint;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-public class AdvancedWebViewManager extends ReactWebViewManager {
+public class AdvancedWebViewManager extends ReactAdvancedWebViewManager {
 
     private static final String REACT_CLASS = "RCTXAdvancedWebView";
 //    private static final String REACT_CLASS = "RCTWebViewBridge";
@@ -55,16 +56,15 @@ public class AdvancedWebViewManager extends ReactWebViewManager {
     }
 
     @Override
-    public void receiveCommand(WebView webView, int commandId, @Nullable ReadableArray args) {
-        Log.e("ReactTag", " receiveCommand  ");
-        super.receiveCommand(webView, commandId, args);
+    public void receiveCommand(AdvancedWebView root, int commandId, @Nullable ReadableArray args) {
+        super.receiveCommand(root, commandId, args);
 
         switch (commandId) {
             case COMMAND_INJECT_BRIDGE_SCRIPT:
-                injectBridgeScript(webView);
+                injectBridgeScript(root);
                 break;
             case COMMAND_SEND_TO_BRIDGE:
-                sendToBridge(webView, args.getString(0));
+                sendToBridge(root, args.getString(0));
                 break;
             default:
                 //do nothing!!!!
@@ -74,22 +74,19 @@ public class AdvancedWebViewManager extends ReactWebViewManager {
     private void sendToBridge(WebView root, String message) {
         //root.loadUrl("javascript:(function() {\n" + script + ";\n})();");
         String script = "WebViewBridge.onMessage('" + message + "');";
-        AdvancedWebViewManager.evaluateJavascript(root, script);
-
-        Log.e("ReactTag", " sendToBridge  " + message);
+        evaluateJavascript(root, script);
     }
 
-    private void injectBridgeScript(WebView webView) {
-        Log.e("ReactTag", " injectBridgeScript  ");
+    private void injectBridgeScript(WebView root) {
         //this code needs to be called once per context
         if (!initializedBridge) {
-            webView.addJavascriptInterface(new JavascriptBridge((ReactContext) webView.getContext()), "WebViewBridgeAndroid");
+            root.addJavascriptInterface(new JavascriptBridge((ReactContext) root.getContext()), "WebViewBridgeAndroid");
             initializedBridge = true;
-            webView.reload();
+            root.reload();
         }
 
         // this code needs to be executed everytime a url changes.
-        AdvancedWebViewManager.evaluateJavascript(webView, ""
+        evaluateJavascript(root, ""
                 + "(function() {"
                 + "if (window.WebViewBridge) return;"
                 + "var customEvent = document.createEvent('Event');"
@@ -103,11 +100,11 @@ public class AdvancedWebViewManager extends ReactWebViewManager {
                 + "}());");
     }
 
-    static private void evaluateJavascript(WebView webView, String javascript) {
+    static private void evaluateJavascript(WebView root, String javascript) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            webView.evaluateJavascript(javascript, null);
+            root.evaluateJavascript(javascript, null);
         } else {
-            webView.loadUrl("javascript:" + javascript);
+            root.loadUrl("javascript:" + javascript);
         }
     }
 
@@ -124,7 +121,7 @@ public class AdvancedWebViewManager extends ReactWebViewManager {
             WritableMap params = Arguments.createMap();
             params.putString("message", message);
             context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                    .emit("webViewBridgeMessage", params);
+                    .emit("webViewMessage", params);
         }
     }
 }

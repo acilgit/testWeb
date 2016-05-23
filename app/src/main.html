@@ -27,8 +27,6 @@
         }
 
         function showFromHtml(){
-            var ret = prompt(getShareJson(), "MESSAGE");
-            document.getElementById("input2").value = ret + count++;
         }
 
         function showFromHtml2(param ){
@@ -36,8 +34,7 @@
         }
 
         function share2(){
-            var ret = prompt(JSON.stringify({id: 1000, name: "getSelf", date: Date.now()}), "MESSAGE");
-            document.getElementById("input").value = ret + count++;
+            document.getElementById("input").value = count++;
             if (WebViewBridge) {
                 WebViewBridge.send(JSON.stringify({id:1000, name:"getSelf", date:Date.now()}));
             }
@@ -45,12 +42,14 @@
 
 //        (function () {
 //            if (WebViewBridge) {
+//                document.getElementById("input2").value = "Bridge Waiting! onMessage...";
 //                WebViewBridge.onMessage = function (message) {
-//                    if (message === "hello from react-native") {
-//                        WebViewBridge.send("got the message inside webview");
+//                    let v = "false ";
+//                    if (message === "hello") {
+//                        v="hello! ";
 //                    }
+//                    document.getElementById("input2").value = v + count++;
 //                };
-//                WebViewBridge.send("hello from webview");
 //            }
 //        }());
     </script>
@@ -67,7 +66,11 @@ hello IT-homer
 
 <input id="btn" type="button" value="Share" onclick="share2()" />
 <br>
+<br>
 <input id="btn2" type="button" value="Share" onclick="share2()" />
+<br>
+<br>
+<input id="btn3" type="button" value="Share" onclick="share2()" />
 <br>
 <input type="button" value="HtmlcallJava2" onclick="showHtmlcallJava2()" />
 <br>

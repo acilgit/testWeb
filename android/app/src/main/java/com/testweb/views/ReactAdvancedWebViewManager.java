@@ -72,7 +72,7 @@ import javax.annotation.Nullable;
  */
 public class ReactAdvancedWebViewManager extends SimpleViewManager<AdvancedWebView> {
 
-    public static final String REACT_CLASS = "RCTXAdvancedWebView";
+    public static final String REACT_CLASS = "RCTAdvancedWebView";
     private ThemedReactContext reactContext;
     private Activity activity;
 //    private static final String REACT_CLASS = "RCTWebView";
@@ -139,7 +139,7 @@ public class ReactAdvancedWebViewManager extends SimpleViewManager<AdvancedWebVi
 
     @Override
     protected AdvancedWebView createViewInstance(final ThemedReactContext reactContext) {
-        final AdvancedWebView webView = new AdvancedWebView(reactContext) {
+        final AdvancedWebView webView = new AdvancedWebView(reactContext) /*{
             @Override
             public String onReceivedJsMessage(String message)  {
 //                JSONObject json = new JSONObject(message);
@@ -148,7 +148,7 @@ public class ReactAdvancedWebViewManager extends SimpleViewManager<AdvancedWebVi
                 sendEvent(reactContext, "onMessage", params);
                 return resultJson;
             }
-        };
+        }*/;
         mWebViewConfig.configWebView(webView);
         activity = reactContext.getNativeModule(XiuJavaModule.class).getActivity();
         reactContext.getNativeModule(XiuJavaModule.class).reactContext.addActivityEventListener(new ActivityEventListener() {
@@ -289,6 +289,7 @@ public class ReactAdvancedWebViewManager extends SimpleViewManager<AdvancedWebVi
     protected void addEventEmitters(ThemedReactContext reactContext, AdvancedWebView view) {
         // Do not register default touch emitter and let WebView implementation handle touches
 //        view.setWebViewClient(new AdvancedWebView.AdvancedWebViewClient());
+        view.initWebViewClient();
     }
 
     @Override
