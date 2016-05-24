@@ -94,7 +94,7 @@ import javax.annotation.Nullable;
  * Advanced WebView component for Android that works as intended out of the box
  */
 @SuppressWarnings("deprecation")
-public class AdvancedWebView extends WebView implements LifecycleEventListener {
+public abstract class AdvancedWebView extends WebView implements LifecycleEventListener {
 
     public interface Listener {
         void onPageStarted(String url, Bitmap favicon);
@@ -1015,34 +1015,35 @@ public class AdvancedWebView extends WebView implements LifecycleEventListener {
 
     public class AdvancedJsWebChromeClient extends WebChromeClient {
 
-        public static final String DEFAULT_VALUE = "MESSAGE";
-        public static final String DEFAULT_RESULT = "{\"result\":true}";
+        public static final String DEFAULT_VALUE = XiuJavaModule.JsEvents.EVENT_NAME_ReceivedMessageFromWebView;
+        public static final String DEFAULT_RESULT_SUCCESS = "{\"result\":true}";
+        public static final String DEFAULT_RESULT_FALSE = "{\"result\":false}";
         public static final String FEEDBACK = "OK";
 
         @Override
         public boolean onJsPrompt(WebView view, String url, String message, String defaultValue, JsPromptResult result) {
-            if (mCustomWebChromeClient != null) {
+           /* if (mCustomWebChromeClient != null) {
                 return mCustomWebChromeClient.onJsPrompt(view, url, message, defaultValue, result);
             } else {
                 return super.onJsPrompt(view, url, message, defaultValue, result);
-            }
-
-           /*     Log.e("ReactTag", " onJsPrompt "+message +" def: " + defaultValue);
-        if (defaultValue != null && defaultValue.equals(DEFAULT_VALUE)) {
+            }*/
+            Log.e("ReactTag", " onJsPrompt "+message +" def: " + defaultValue);
+            if (defaultValue != null && defaultValue.equals(DEFAULT_VALUE)) {
                 try {
-                   String resultJson = onReceivedJsMessage(message);
-                    if (JSONObject .resultJson) {
-                    }
+                    String resultJson = onReceivedJsMessage(message);
                     result.confirm(resultJson);
+                    Log.e("ReactTag", " onJsPrompt OK "+resultJson );
                     return true;
                 } catch (Exception e) {
                     e.printStackTrace();
-                    result.confirm("{\"result\":false}");
+                    result.confirm(DEFAULT_RESULT_FALSE);
                     return true;
                 }
+            } else {
+                return super.onJsPrompt(view, url, message, defaultValue, result);
             }
-            result.confirm("{\"result\":false}");
-            return true;*/
+//            result.confirm("{\"result\":false}");
+//            return true;
         }
 
         // file upload callback (Android 2.2 (API level 8) -- Android 2.3 (API level 10)) (hidden method)
@@ -1395,6 +1396,6 @@ public class AdvancedWebView extends WebView implements LifecycleEventListener {
 
     }
 
-//    public abstract String onReceivedJsMessage(String message) throws Exception;
+    public abstract String onReceivedJsMessage(String message) throws Exception;
 
 }

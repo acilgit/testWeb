@@ -44,24 +44,28 @@ export default class Web extends Component {
     }
     _onWebViewMessage(message) {
         ToastAndroid.show(message, ToastAndroid.SHORT);
-        let msg = JSON.parse(message);
-        //dispatch(webActions.setText(msg.name));
-        //const { webviewbridge } = this.refs;
-        switch (message) {
-            case "hello from webview":
-                //webviewbridge.sendToBridge("hello from react-native");
-                break;
-            case "got the message inside webview":
-                this.setState({title: msg.name});
-                ToastAndroid.show(message, ToastAndroid.SHORT);
-                console.log("we have got a message from webview! yeah");
-                break;
-            default:
-                break;
+        try {
+            let msg = JSON.parse(message);
+            //dispatch(webActions.setText(msg.name));
+            //const { webviewbridge } = this.refs;
+            switch (message) {
+                case "hello from webview":
+                    //webviewbridge.sendToBridge("hello from react-native");
+                    break;
+                case "got the message inside webview":
+                    this.setState({title: msg.name});
+                    ToastAndroid.show(message, ToastAndroid.SHORT);
+                    console.log("we have got a message from webview! yeah");
+                    break;
+                default:
+                    break;
+            }
+        }catch (e){
+
         }
     }
 
-    _sendMessageToBridge() {
+    _sendMessageToWebView() {
         var message = "hello";
         this.refs['webviewbridge'].sendToBridge(message);
         //let msg = JSON.parse(message);
@@ -104,7 +108,8 @@ export default class Web extends Component {
             document.getElementById("input2").value = "Bridge Waiting!";
             WebViewBridge.onMessage = onMsg;
         }
-        `;/*WebViewBridge.onMessage = */
+        `;
+        /*WebViewBridge.onMessage = */
         //(function () {
         //}());
         let {source, title} = this.state;
@@ -135,7 +140,7 @@ export default class Web extends Component {
                     />
                 </View>
                 <TouchableOpacity style={[{height: 60}]}
-                                  onPress={this._sendMessageToBridge.bind(this)}>
+                                  onPress={this._sendMessageToWebView.bind(this)}>
                     <Text style={[styles.welcome, {flex: 1}]}>
                         {title}
                     </Text>

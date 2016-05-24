@@ -139,16 +139,21 @@ public class ReactAdvancedWebViewManager extends SimpleViewManager<AdvancedWebVi
 
     @Override
     protected AdvancedWebView createViewInstance(final ThemedReactContext reactContext) {
-        final AdvancedWebView webView = new AdvancedWebView(reactContext) /*{
+        final AdvancedWebView webView = new AdvancedWebView(reactContext) {
             @Override
             public String onReceivedJsMessage(String message)  {
 //                JSONObject json = new JSONObject(message);
                 WritableMap params = Arguments.createMap();
-                params.putString("message", message);
-                sendEvent(reactContext, "onMessage", params);
-                return resultJson;
+                params.putString(XiuJavaModule.JsEvents.EVENT_NAME_ReceivedMessageFromWebView_param, message);
+                sendEvent(reactContext, XiuJavaModule.JsEvents.EVENT_NAME_ReceivedMessageFromWebView, params);
+//                try {
+//                    Thread.sleep(3000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+                return AdvancedJsWebChromeClient.DEFAULT_RESULT_SUCCESS;
             }
-        }*/;
+        };
         mWebViewConfig.configWebView(webView);
         activity = reactContext.getNativeModule(XiuJavaModule.class).getActivity();
         reactContext.getNativeModule(XiuJavaModule.class).reactContext.addActivityEventListener(new ActivityEventListener() {

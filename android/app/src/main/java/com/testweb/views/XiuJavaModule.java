@@ -2,9 +2,13 @@ package com.testweb.views;
 
 import android.app.Activity;
 import android.util.Log;
+
+import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +19,7 @@ import java.util.Map;
 public class XiuJavaModule extends ReactContextBaseJavaModule{
 
     private Promise mPickerPromise;
+
     public static final String REACT_CLASS = "XModule";
     public static final int REQUEST_CODE_CHOOSE_FILE = 1001;
 
@@ -25,7 +30,6 @@ public class XiuJavaModule extends ReactContextBaseJavaModule{
         this.reactContext = reactContext;
 //        reactContext.addActivityEventListener(this);
         Log.e("ReactTag", " created  " + 4);
-
     }
 
     @Override
@@ -43,11 +47,23 @@ public class XiuJavaModule extends ReactContextBaseJavaModule{
     public ReactApplicationContext getReactContext(){
         return reactContext;
     }
-/*
+
     @ReactMethod
-    public void chooseFile() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image*//*");
+    public void receivedMessageFromWebView(String message, Promise promise) {
+        try {
+            WritableMap map = Arguments.createMap();
+//            map.
+            promise.resolve(map);
+        } catch (Exception e) {
+            promise.reject(e);
+        }
+    }
+
+    /*
+        @ReactMethod
+        public void chooseFile() {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image*//*");
         // 开启一个带有返回值的Activity，请求码为PHOTO_REQUEST_GALLERY
         getCurrentActivity().startActivityForResult(intent, REQUEST_CODE_CHOOSE_FILE);
     }
@@ -86,4 +102,9 @@ public class XiuJavaModule extends ReactContextBaseJavaModule{
             Toast.makeText(reactContext, "data:" + s, Toast.LENGTH_SHORT).show();
         }
     }*/
+    public class JsEvents {
+
+        public static final String EVENT_NAME_ReceivedMessageFromWebView = "messageFromWebView";
+        public static final String EVENT_NAME_ReceivedMessageFromWebView_param = "message";
+    }
 }

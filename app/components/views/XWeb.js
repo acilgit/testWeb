@@ -70,7 +70,7 @@ class XWebViewBridge extends React.Component {
       }
 
     componentWillMount() {
-        DeviceEventEmitter.addListener("webViewMessage", (body) => {
+        DeviceEventEmitter.addListener("messageFromWebView", (body) => {
             const { onWebViewMessage } = this.props;
             const message = body.message;
             if (onWebViewMessage) {
